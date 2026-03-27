@@ -1,7 +1,9 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { z } from "zod";
+import { createPlant, getPlantsByUserId, deletePlant, createInventoryItem, getInventoryByUserId } from "./db";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -17,12 +19,111 @@ export const appRouter = router({
     }),
   }),
 
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  // Plant management routes
+  plants: router({
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1, "Plant name is required"),
+        species: z.string().optional(),
+        location: z.string().optional(),
+        wateringFrequency: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (!ctx.user) throw new Error("Unauthorized");
+        const plant = await createPlant(ctx.user.id, input);
+        if (!plant) throw new Error("Failed to create plant");
+        return plant;
+      }),
+    
+    list: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (!ctx.user) throw new Error("Unauthorized");
+        return await getPlantsByUserId(ctx.user.id);
+      }),
+    
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (!ctx.user) throw new Error("Unauthorized");
+        const success = await deletePlant(input.id, ctx.user.id);
+        if (!success) throw new Error("Failed to delete plant");
+        return { success: true };
+      }),
+  }),
+
+  // Inventory management routes
+  inventory: router({
+    create: protectedProcedure
+      .input(z.object({
+        itemName: z.string().min(1, "Item name is required"),
+        quantity: z.number().default(0),
+        category: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (!ctx.user) throw new Error("Unauthorized");
+        const item = await createInventoryItem(ctx.user.id, input);
+        if (!item) throw new Error("Failed to create inventory item");
+        return item;
+      }),
+    
+    list: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (!ctx.user) throw new Error("Unauthorized");
+        return await getInventoryByUserId(ctx.user.id);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
+
+// Mock data for fallback when database is unavailable
+export const mockPlants = [
+  {
+    id: 1,
+    userId: 1,
+    name: "Monstera Deliciosa",
+    species: "Monstera deliciosa",
+    location: "Living Room",
+    wateringFrequency: "Weekly",
+    lastWatered: new Date(),
+    imageUrl: null,
+    notes: "Thriving, needs more light",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 2,
+    userId: 1,
+    name: "Snake Plant",
+    species: "Sansevieria trifasciata",
+    location: "Bedroom",
+    wateringFrequency: "Monthly",
+    lastWatered: new Date(),
+    imageUrl: null,
+    notes: "Low maintenance",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
+
+export const mockInventory = [
+  {
+    id: 1,
+    userId: 1,
+    itemName: "Potting Soil",
+    quantity: 5,
+    category: "Soil",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 2,
+    userId: 1,
+    itemName: "Plant Fertilizer",
+    quantity: 2,
+    category: "Nutrients",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];

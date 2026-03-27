@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, plants, InsertPlant, Plant, inventoryItems, InsertInventoryItem, InventoryItem } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,98 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Plant management queries
+export async function createPlant(userId: number, plant: Omit<InsertPlant, 'userId'>): Promise<Plant | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create plant: database not available");
+    return null;
+  }
+
+  try {
+    await db.insert(plants).values({
+      ...plant,
+      userId,
+    });
+    console.log(`[Database] Plant created: ${plant.name} for user ${userId}`);
+    // Return the created plant by querying the latest entry
+    const result = await db.select().from(plants).where(eq(plants.userId, userId)).orderBy(plants.createdAt).limit(1);
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to create plant:", error);
+    return null;
+  }
+}
+
+export async function getPlantsByUserId(userId: number): Promise<Plant[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get plants: database not available");
+    return [];
+  }
+
+  try {
+    const result = await db.select().from(plants).where(eq(plants.userId, userId));
+    console.log(`[Database] Retrieved ${result.length} plants for user ${userId}`);
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to get plants:", error);
+    return [];
+  }
+}
+
+export async function deletePlant(plantId: number, userId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete plant: database not available");
+    return false;
+  }
+
+  try {
+    await db.delete(plants).where(and(eq(plants.id, plantId), eq(plants.userId, userId)));
+    console.log(`[Database] Plant deleted: ID ${plantId} for user ${userId}`);
+    return true;
+  } catch (error) {
+    console.error("[Database] Failed to delete plant:", error);
+    return false;
+  }
+}
+
+// Inventory management queries
+export async function createInventoryItem(userId: number, item: Omit<InsertInventoryItem, 'userId'>): Promise<InventoryItem | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create inventory item: database not available");
+    return null;
+  }
+
+  try {
+    await db.insert(inventoryItems).values({
+      ...item,
+      userId,
+    });
+    console.log(`[Database] Inventory item created: ${item.itemName} for user ${userId}`);
+    const result = await db.select().from(inventoryItems).where(eq(inventoryItems.userId, userId)).orderBy(inventoryItems.createdAt).limit(1);
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to create inventory item:", error);
+    return null;
+  }
+}
+
+export async function getInventoryByUserId(userId: number): Promise<InventoryItem[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get inventory: database not available");
+    return [];
+  }
+
+  try {
+    const result = await db.select().from(inventoryItems).where(eq(inventoryItems.userId, userId));
+    console.log(`[Database] Retrieved ${result.length} inventory items for user ${userId}`);
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to get inventory:", error);
+    return [];
+  }
+}

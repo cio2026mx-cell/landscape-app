@@ -8,6 +8,10 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
+console.log("[App] Starting Landscape Management Application");
+console.log("[App] Environment:", import.meta.env.MODE);
+console.log("[App] API URL from env:", import.meta.env.VITE_API_URL || "(not set, using relative path)");
+
 const queryClient = new QueryClient();
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {
@@ -37,10 +41,27 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+// Dynamically construct API_BASE_URL from VITE_API_URL environment variable
+// VITE_API_URL should NOT include /api/trpc suffix or trailing slash
+const getApiBaseUrl = (): string => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  
+  if (apiUrl) {
+    // Remove trailing slashes and append /api/trpc
+    const cleanUrl = apiUrl.replace(/\/+$/, "");
+    console.log(`[tRPC Client] Connecting to: ${cleanUrl}/api/trpc`);
+    return `${cleanUrl}/api/trpc`;
+  }
+  
+  // Fallback to relative path for development
+  console.log("[tRPC Client] No VITE_API_URL provided, using relative path /api/trpc");
+  return "/api/trpc";
+};
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: getApiBaseUrl(),
       transformer: superjson,
       fetch(input, init) {
         return globalThis.fetch(input, {
