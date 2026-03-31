@@ -5,6 +5,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { createPlant, getPlantsByUserId, deletePlant, createInventoryItem, getInventoryByUserId } from "./db";
 import { removeBackground } from "./_core/designApi";
+import { wavespeedRouter } from "./wavespeed";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -86,6 +87,9 @@ export const appRouter = router({
         return await removeBackground(input);
       }),
   }),
+
+  // Wavespeed AI Assistant
+  wavespeed: wavespeedRouter,
 });
 
 export type AppRouter = typeof appRouter;
