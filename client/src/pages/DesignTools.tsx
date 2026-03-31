@@ -14,11 +14,17 @@ export default function DesignTools() {
 
   const removeBgMutation = trpc.design.removeBackground.useMutation({
     onSuccess: (data) => {
-      setProcessedUrl(data.url);
-      toast.success("Background removed successfully!");
+      if (data && data.url) {
+        setProcessedUrl(data.url);
+        toast.success("Background removed successfully!");
+      } else {
+        console.error("Invalid response from AI:", data);
+        toast.error("AI returned an invalid response. Please try again.");
+      }
     },
     onError: (error) => {
-      toast.error(`Error: ${error.message}`);
+      console.error("AI Error:", error);
+      toast.error(`AI Error: ${error.message || "Unknown error occurred"}`);
     },
   });
 
