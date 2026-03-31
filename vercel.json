@@ -2,29 +2,6 @@
   "buildCommand": "pnpm build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "env": {
-    "VITE_API_URL": {
-      "description": "Backend API URL (without /api/trpc suffix or trailing slash)"
-    },
-    "VITE_APP_ID": {
-      "description": "Manus OAuth application ID"
-    },
-    "VITE_OAUTH_PORTAL_URL": {
-      "description": "Manus OAuth portal URL"
-    },
-    "VITE_FRONTEND_FORGE_API_URL": {
-      "description": "Manus API URL"
-    },
-    "VITE_FRONTEND_FORGE_API_KEY": {
-      "description": "Manus API key"
-    },
-    "VITE_ANALYTICS_ENDPOINT": {
-      "description": "Analytics endpoint"
-    },
-    "VITE_ANALYTICS_WEBSITE_ID": {
-      "description": "Analytics website ID"
-    }
-  },
   "regions": ["sfo1"],
   "functions": {
     "api/**": {
