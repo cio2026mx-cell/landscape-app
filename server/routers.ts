@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { createPlant, getPlantsByUserId, deletePlant, createInventoryItem, getInventoryByUserId } from "./db";
+import { removeBackground } from "./_core/designApi";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -71,6 +72,18 @@ export const appRouter = router({
       .query(async ({ ctx }) => {
         if (!ctx.user) throw new Error("Unauthorized");
         return await getInventoryByUserId(ctx.user.id);
+      }),
+  }),
+
+  // Design tools routes
+  design: router({
+    removeBackground: protectedProcedure
+      .input(z.object({
+        image: z.string().min(1, "Image URL or Base64 is required"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (!ctx.user) throw new Error("Unauthorized");
+        return await removeBackground(input);
       }),
   }),
 });
