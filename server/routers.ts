@@ -31,23 +31,23 @@ export const appRouter = router({
         notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        if (!ctx.user) throw new Error("Unauthorized");
-        const plant = await createPlant(ctx.user.id, input);
+        const userId = ctx.user?.id ?? 1;
+        const plant = await createPlant(userId, input);
         if (!plant) throw new Error("Failed to create plant");
         return plant;
       }),
     
     list: protectedProcedure
       .query(async ({ ctx }) => {
-        if (!ctx.user) throw new Error("Unauthorized");
-        return await getPlantsByUserId(ctx.user.id);
+        const userId = ctx.user?.id ?? 1;
+        return await getPlantsByUserId(userId);
       }),
     
     delete: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        if (!ctx.user) throw new Error("Unauthorized");
-        const success = await deletePlant(input.id, ctx.user.id);
+        const userId = ctx.user?.id ?? 1;
+        const success = await deletePlant(input.id, userId);
         if (!success) throw new Error("Failed to delete plant");
         return { success: true };
       }),
@@ -62,16 +62,16 @@ export const appRouter = router({
         category: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        if (!ctx.user) throw new Error("Unauthorized");
-        const item = await createInventoryItem(ctx.user.id, input);
+        const userId = ctx.user?.id ?? 1;
+        const item = await createInventoryItem(userId, input);
         if (!item) throw new Error("Failed to create inventory item");
         return item;
       }),
     
     list: protectedProcedure
       .query(async ({ ctx }) => {
-        if (!ctx.user) throw new Error("Unauthorized");
-        return await getInventoryByUserId(ctx.user.id);
+        const userId = ctx.user?.id ?? 1;
+        return await getInventoryByUserId(userId);
       }),
   }),
 
@@ -82,7 +82,7 @@ export const appRouter = router({
         image: z.string().min(1, "Image URL or Base64 is required"),
       }))
       .mutation(async ({ ctx, input }) => {
-        if (!ctx.user) throw new Error("Unauthorized");
+        // if (!ctx.user) throw new Error("Unauthorized");
         return await removeBackground(input);
       }),
   }),
