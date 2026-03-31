@@ -8,19 +8,22 @@ import Home from "./pages/Home";
 import Plants from "./pages/Plants";
 import Inventory from "./pages/Inventory";
 import DesignTools from "./pages/DesignTools";
+import DashboardLayout from "./components/DashboardLayout";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
-    <Switch>
-      <Route path={"\\"} component={Home} />
-      <Route path="/plants" component={Plants} />
-      <Route path="/inventory" component={Inventory} />
-      <Route path="/design" component={DesignTools} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <DashboardLayout>
+      <Switch>
+        <Route path={"/"} component={Home} />
+        <Route path="/plants" component={Plants} />
+        <Route path="/inventory" component={Inventory} />
+        <Route path="/design" component={DesignTools} />
+        <Route path={"/404"} component={NotFound} />
+        {/* Final fallback route */}
+        <Route component={NotFound} />
+      </Switch>
+    </DashboardLayout>
   );
 }
 
