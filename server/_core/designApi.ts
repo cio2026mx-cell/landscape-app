@@ -39,17 +39,24 @@ export async function removeBackground(
     );
   }
 
-  const result = (await response.json()) as {
-    id: string;
-    status: string;
-    outputs: string[];
-  };
+  const result = (await response.json()) as any;
+  console.log("[WaveSpeed AI] Response received:", JSON.stringify(result));
 
-  if (result.status !== "completed" || !result.outputs || result.outputs.length === 0) {
-    throw new Error(`WaveSpeed AI processing failed or returned no output. Status: ${result.status}`);
+  const data = result.data || result;
+  // Some versions of the API might return the URL directly or in different formats
+  let outputUrl: string | undefined;
+
+  if (data.status === "completed" && data.outputs && data.outputs.length > 0) {
+    outputUrl = data.outputs[0];
+  } else if (data.output_url) {
+    outputUrl = data.output_url;
+  } else if (data.url) {
+    outputUrl = data.url;
   }
 
-  const outputUrl = result.outputs[0];
+  if (!outputUrl) {
+    throw new Error(`WaveSpeed AI processing failed or returned no output. Status: ${data.status || 'unknown'}. Response: ${JSON.stringify(result)}`);
+  }
 
   // 2. Download the result and save it to our storage (S3)
   const imageResponse = await fetch(outputUrl);
