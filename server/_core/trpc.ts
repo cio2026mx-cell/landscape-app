@@ -13,19 +13,18 @@ export const publicProcedure = t.procedure;
 const requireUser = t.middleware(async opts => {
   const { ctx, next } = opts;
 
-  if (!ctx.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
-  }
+  // Bypass authentication: if no user, provide a mock user (ID: 1)
+  const user = ctx.user || { id: 1, openId: 'public_user', name: 'Public User', role: 'user' };
 
   return next({
     ctx: {
       ...ctx,
-      user: ctx.user,
+      user,
     },
   });
 });
 
-export const protectedProcedure = t.procedure; // t.procedure.use(requireUser);
+export const protectedProcedure = t.procedure.use(requireUser);
 
 export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {
