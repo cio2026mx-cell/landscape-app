@@ -92,7 +92,20 @@ const FORGE_BASE_URL =
   "https://forge.butterfly-effect.dev";
 const MAPS_PROXY_URL = `${FORGE_BASE_URL}/v1/maps/proxy`;
 
+function isValidUrl(url: string) {
+  try {
+    new URL(url);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function loadMapScript() {
+  if (!isValidUrl(MAPS_PROXY_URL)) {
+    console.error("Invalid Maps Proxy URL:", MAPS_PROXY_URL);
+    return Promise.resolve(null);
+  }
   return new Promise(resolve => {
     const script = document.createElement("script");
     script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
