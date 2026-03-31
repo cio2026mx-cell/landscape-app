@@ -72,7 +72,7 @@ export default function DesignTools() {
                   type="file"
                   accept="image/*"
                   onChange={handleFileUpload}
-                  disabled={isUploading || removeBgMutation.isLoading}
+                  disabled={isUploading || removeBgMutation.isPending}
                 />
               </div>
             </div>
@@ -90,10 +90,10 @@ export default function DesignTools() {
 
               <Button
                 onClick={handleRemoveBackground}
-                disabled={!imageUrl || removeBgMutation.isLoading}
+                disabled={!imageUrl || removeBgMutation.isPending}
                 className="w-full"
               >
-                {removeBgMutation.isLoading ? (
+                {removeBgMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Processing...
