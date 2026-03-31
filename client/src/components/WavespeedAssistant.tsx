@@ -24,7 +24,18 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Sparkles, X, Send, Loader2, Bot } from "lucide-react";
-import { Obstacle } from "./ObstacleDetector";
+
+// Type definition for Obstacle
+export interface Obstacle {
+  id: string;
+  label: string;
+  type: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  confidence: number;
+}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Message {
